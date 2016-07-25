@@ -1,6 +1,8 @@
-﻿var mongoose = require('mongoose');
-var SiteModel = require('./models/Site');
-var dburl = require('../config.json').dburl;
+﻿'use strict'
+
+var mongoose = require('mongoose'),
+	SiteModel = require('./models/Site'),
+	dburl = require('../config.json').dburl;
 
 mongoose.Promise = global.Promise;
 
@@ -11,7 +13,7 @@ var findValue = function(arr, value){
 	return -1;
 }
 
-var Db = function(dburl){
+var Db = function(){
 
 	this.connection = mongoose.createConnection(dburl);
 	this.Site = SiteModel(this.connection);
@@ -29,9 +31,9 @@ var Db = function(dburl){
 			.then(site=>{
 				if(findValue(site.users, chatId) !== -1) return;
 				return this.Site.update({path: address},{$push: {"users": chatId}});
-			})
+			});
 
-	}
+	};
 
 	this.removeSite = (chatId, address) => {
 		return this.Site.update({path: address}, {$pull: {users: chatId}})
@@ -39,47 +41,24 @@ var Db = function(dburl){
 			.then(site =>{
 				if(!site) return;
 				if(!site.users || !site.users[0]) return this.Site.remove({path: address});
-			})
-	}
+			});
+	};
 
+	this.getFavorites = chatId => {
+		return this.Site.find({users:chatId}).exec()
+			.then(sites => {
+				var favorites = [];
+				for(var i = 0, l = sites.length; i < l; i++){
+					favorites.push(sites[i].path);
+				}
+				return favorites;
+			});
+	};
+
+	this.getUsers = address => {
+		return this.Site.findOne({path: address}).exec()
+			.then(site => site.users);
+	};
 }
-/*
-var db1 = new Db(dburl);
-db1.addSite(1,'yandex.com')
-	.then(()=>db1.addSite(1,'google.com'))
-	.then(()=>db1.addSite(1,'vk.com'))
-	.then(()=>db1.removeSite(1,'google.com'))
-	.then(()=>db1.removeSite(1,'vk.com'))
-	.then(() => db1.connection.close())
-	.catch(err=>{
-		db1.connection.close();
-		console.error(err);
-	})
 
-
-var db2 = new Db(dburl);
-db2.addSite(8,'yandex.com')
-	.then(()=>db2.addSite(8,'google.com'))
-	.then(()=>db2.addSite(8,'vk.com'))
-	.then(()=>db2.removeSite(8,'google.com'))
-	.then(()=>db2.removeSite(8,'vk.com'))
-	.then(()=>db2.removeSite(8,'yandex.com'))
-	.then(() => db2.connection.close())
-	.catch(err=>{
-		db2.connection.close();
-		console.error(err);
-	})
-
-
-var db3 = new Db(dburl);
-db3.addSite(1,'yandex.com')
-	.then(()=>db3.addSite(7,'google.com'))
-	.then(()=>db3.addSite(7,'vk.com'))
-	.then(()=>db3.removeSite(8,'yandex.com'))
-	.then(() => db3.connection.close())
-	.catch(err=>{
-		db3.connection.close();
-		console.error(err);
-	})
-
-*/
+module.exports = Db;

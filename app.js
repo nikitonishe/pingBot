@@ -1,15 +1,11 @@
-﻿var TelegramBot = require('node-telegram-bot-api'),
-	Router = require('./router/Router'),
-	config = require('./config');
+﻿'use strict'
+var Telegram = require('telegram-node-bot'),
+	token = require('./config.json').token;
 
-var token = config.token,
-	options = {polling: true};
-var bot = new TelegramBot(token, options),
-	router =  new Router(bot);
+var TelegramBaseController = Telegram.TelegramBaseController,
+	bot = new Telegram.Telegram(token);
 
-bot.on('text', function(message){
-	var chatId = message.chat.id,
-        textMes = message.text;
-
-    router.route(textMes, chatId);
-})
+bot.router
+    .when(['/start'], new (require('./routes/startController')(TelegramBaseController))())
+    .when(['Добавить сайт'], new (require('./routes/addSiteController')(TelegramBaseController))())
+    .when(['Избранное'], new (require('./routes/favoritesController')(TelegramBaseController))());
