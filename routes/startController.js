@@ -1,9 +1,11 @@
 ﻿'use strict'
 
+var commonMessages = require('../messages/common');
+
 var startController = function(TelegramBaseController){
 	return class StartController extends TelegramBaseController { 
 	    startHandler($) {
-	    	require('../messages/common')($, 'start');
+	    	commonMessages($, 'start');
 	    }
 
 	    get routes() {

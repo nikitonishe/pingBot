@@ -1,28 +1,30 @@
 ﻿'use strict'
-var Db = require('../connection/connect'),
+
+var Db = require('../connection/Db'),
 	ping = require('../lib/ping'),
 	commonMessages = require('../messages/common'),
+	newStatusMessages = require('../messages/newStatus'),
 	addSiteMessages = require('../messages/addSite');
 
 var waitAddress = function wait($){
-	var db = new Db;
 	$.waitForRequest
 		.then($ => {
 			if($.message._text === 'Отменить') return addSiteMessages.endOperation($, 'cancel');
-			return ping($.chatId, $.message._text)
+			if(!$.message._text.match(/http:\/\/|https:\/\//)) $.message._text = 'http://'+ $.message._text;
+			return ping($.message._text);
 		})
 		.then(status =>{
 			if(status.error){
 				addSiteMessages.incorrectAddress($);
 				return wait($);
 			}
-			return db.addSite($.chatId, $.message._text)
+			var db = new Db;
+			return db.addSite($.chatId, status.address, status.code)
 				.then(res => {
 					db.connection.close();
 					if(!res) return addSiteMessages.endOperation($, 'siteAlreadyExist');
 					commonMessages($, 'success');
-				}).then(status => {
-					console.log(status);
+					return newStatusMessages($.chatId, status, true);
 				})
 		})
 		.catch(err => {

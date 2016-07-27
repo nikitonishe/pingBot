@@ -18,12 +18,12 @@ var Db = function(){
 	this.connection = mongoose.createConnection(dburl);
 	this.Site = SiteModel(this.connection);
 
-	this.addSite = (chatId, address) => {
+	this.addSite = (chatId, address, status) => {
 
 		return this.Site.findOne({path: address}).exec()
 			.then(site => {
 				if(!site) {
-					site = new this.Site({path: address});
+					site = new this.Site({path: address, status: status});
 					return site.save();
 				}
 			})
@@ -55,10 +55,21 @@ var Db = function(){
 			});
 	};
 
-	this.getUsers = address => {
-		return this.Site.findOne({path: address}).exec()
-			.then(site => site.users);
-	};
+	this.getSiteStatus = address => {
+		return this.Site.findOne({path: address})
+			.then(site => {
+				if(!site) return false;
+				return site.status
+			});
+	}
+
+	this.getSites = () => {
+		return this.Site.find().exec()
+	}
+
+	this.updateStatus = (address, status) => {
+		return this.Site.update({path: address},{$set: {status: status}})
+	}
 }
 
 module.exports = Db;

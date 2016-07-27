@@ -1,6 +1,6 @@
 ﻿'use strict'
 
-var Db = require('../connection/connect'),
+var Db = require('../connection/Db'),
 	favoritesMessages = require('../messages/favorites'),
 	commonMessages = require('../messages/common');
 

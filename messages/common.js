@@ -1,25 +1,29 @@
 ﻿'use strict'
 
 var texts = require('../texts'),
-	Keyboard = require('../lib/Keyboard');
+	keyboard = require('../lib/keyboard'),
+	tg = require('../tg');
 
 var getText = function(type){
 	if(type === 'start') return texts.start;
 	if(type === 'success') return texts.success;
-	if(!type === 'error') console.error('Неизвестный тип сообщения в messages/common')
+	if(type === 'other') return texts.otherWise;
+	if(!type === 'error') console.error('Неизвестный тип сообщения в messages/common');
 	return texts.error;
 }
 
 var common = function($, type){
-	var keyboard = new Keyboard();
 	var text = getText(type);
-
-	keyboard.getStartButtons($.chatId)
+	var chatId = $.chatId || $._from._id;
+	keyboard.getStartButtons(chatId)
 		.then((keyboard) => {
 			var options = {reply_markup: keyboard};
-			$.sendMessage(text, options); 
+			tg.api.sendMessage(chatId, text, options); 
 		})
-		.catch(err =>  console.error(err));
+		.catch(err => {
+			commonMessages($, 'error');
+			console.error(err);
+		});
 }
 
 module.exports = common;
