@@ -19,6 +19,14 @@ var incorrectAddress = function($){
 
 }
 
+var wait = function ($){
+	$.sendMessage(texts.wait, {
+		reply_markup: JSON.stringify({
+			hide_keyboard: true
+		})
+	})
+}
+
 var endOperation = function($, type){
 	var text = getText(type);
 	if(!text){
@@ -28,7 +36,7 @@ var endOperation = function($, type){
 	keyboard.getStartButtons($.chatId)
 		.then(keyboard => {
 			var options = {reply_markup: keyboard};
-			$.sendMessage(text, options);
+			return $.sendMessage(text, options);
 		})
 		.catch(err => {
 			console.error(err);
@@ -39,3 +47,4 @@ var endOperation = function($, type){
 module.exports.askSite = askSite;
 module.exports.endOperation = endOperation;
 module.exports.incorrectAddress = incorrectAddress;
+module.exports.wait = wait;

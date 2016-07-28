@@ -12,22 +12,23 @@ var removeSite = function($){
 	var db = new Db();
 	db.getSiteStatus(address)
 		.then(statusCode => {
-			if(!statusCode) {
-				db.connection.close();
-				return removeSiteMessages.siteAlreadyRemoved($);
+			if(!statusCode && statusCode !== 0) {
+				removeSiteMessages.siteAlreadyRemoved($);
+				return Promise.reject();
 			}
 			status = statusCode;
 			return db.removeSite($._from._id, $._message._text)
-				.then((res) => {
-					db.connection.close();
-					removeSiteMessages.siteRemoved($, status);
-				})
+		})
+		.then(res => {
+			db.connection.close();
+			return removeSiteMessages.siteRemoved($, status);
 		})
 		.catch(err => {
 			db.connection.close();
-			console.error(err);
-			commonMessages($, 'error');
-
+			if(err){
+				console.error(err);
+				commonMessages($, 'error');
+			}
 		})
 }
 
@@ -40,7 +41,7 @@ var restoreSite = function($){
 	db.addSite($._from._id, address, status)
 		.then(res => {
 			db.connection.close();
-			restoreSiteMessages($);
+			return restoreSiteMessages($);
 		})
 		.catch(err => {
 			db.connection.close();

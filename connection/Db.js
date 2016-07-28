@@ -14,7 +14,6 @@ var findValue = function(arr, value){
 }
 
 var Db = function(){
-
 	this.connection = mongoose.createConnection(dburl);
 	this.Site = SiteModel(this.connection);
 
@@ -31,7 +30,8 @@ var Db = function(){
 			.then(site=>{
 				if(findValue(site.users, chatId) !== -1) return;
 				return this.Site.update({path: address},{$push: {"users": chatId}});
-			});
+			})
+			.catch(err => this.errHandler(err))
 
 	};
 
@@ -41,7 +41,8 @@ var Db = function(){
 			.then(site =>{
 				if(!site) return;
 				if(!site.users || !site.users[0]) return this.Site.remove({path: address});
-			});
+			})
+			.catch(err => this.errHandler(err))
 	};
 
 	this.getFavorites = chatId => {
@@ -52,7 +53,8 @@ var Db = function(){
 					favorites.push(sites[i].path);
 				}
 				return favorites;
-			});
+			})
+			.catch(err => this.errHandler(err))
 	};
 
 	this.getSiteStatus = address => {
@@ -60,16 +62,21 @@ var Db = function(){
 			.then(site => {
 				if(!site) return false;
 				return site.status
-			});
+			})
+			.catch(err => this.errHandler(err))
 	}
 
-	this.getSites = () => {
-		return this.Site.find().exec()
+	this.getSites = () => this.Site.find().exec().catch(err => this.errHandler(err));
+
+	this.getSite = (address) => this.Site.findOne({path: address}).exec().catch(err => this.errHandler(err));
+
+	this.updateStatus = (address, status) => this.Site.update({path: address},{$set: {status: status}}).catch(err => this.errHandler(err));
+
+	this.errHandler = err => {
+		this.connection.close();
+		if(err) console.error(err);
 	}
 
-	this.updateStatus = (address, status) => {
-		return this.Site.update({path: address},{$set: {status: status}})
-	}
 }
 
 module.exports = Db;

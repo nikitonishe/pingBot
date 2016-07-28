@@ -1,36 +1,54 @@
 ﻿'use strict'
 
-var Db = require('../connection/Db'),
+var is = require ('is_js'),
+	Db = require('../connection/Db'),
 	ping = require('../lib/ping'),
 	commonMessages = require('../messages/common'),
 	newStatusMessages = require('../messages/newStatus'),
 	addSiteMessages = require('../messages/addSite');
 
 var waitAddress = function wait($){
-	$.waitForRequest
+	var db,
+		address,
+		status;
+	return $.waitForRequest
 		.then($ => {
-			if($.message._text === 'Отменить') return addSiteMessages.endOperation($, 'cancel');
-			if(!$.message._text.match(/http:\/\/|https:\/\//)) $.message._text = 'http://'+ $.message._text;
-			return ping($.message._text);
-		})
-		.then(status =>{
-			if(status.error){
-				addSiteMessages.incorrectAddress($);
-				return wait($);
+			if($.message._text === 'Отменить'){
+				addSiteMessages.endOperation($, 'cancel');
+				return Promise.reject();
 			}
-			var db = new Db;
-			return db.addSite($.chatId, status.address, status.code)
-				.then(res => {
-					db.connection.close();
-					if(!res) return addSiteMessages.endOperation($, 'siteAlreadyExist');
-					commonMessages($, 'success');
-					return newStatusMessages($.chatId, status, true);
-				})
+			if(!$.message._text.match(/http:\/\/|https:\/\//)) address = 'http://'+ $.message._text;
+			if(is.not.url(address)) {
+				addSiteMessages.incorrectAddress($);
+				wait($);
+				return Promise.reject();
+			}
+			db = new Db;
+			return db.getSite(address);	
+		})
+		.then(site => {
+			if(site) {
+				addSiteMessages.endOperation($, 'siteAlreadyExist');
+				return Promise.reject();
+			}
+			addSiteMessages.wait($);
+			return ping(address)
+		})
+		.then(newStatus => {
+			status = newStatus;
+			return db.addSite($.chatId, status.address, status.code);
+		})
+		.then(res =>{
+			db.connection.close();
+			commonMessages($, 'success');
+			return newStatusMessages($.chatId, status, true);
 		})
 		.catch(err => {
-			db.connection.close();
-			console.error(err);
-			commonMessages($, 'error')
+			if(db) db.connection.close();
+			if(err){
+				console.error(err);
+				commonMessages($, 'error');
+			}
 		})
 }
 

@@ -18,7 +18,7 @@ var common = function($, type){
 	keyboard.getStartButtons(chatId)
 		.then((keyboard) => {
 			var options = {reply_markup: keyboard};
-			tg.api.sendMessage(chatId, text, options); 
+			return tg.api.sendMessage(chatId, text, options); 
 		})
 		.catch(err => {
 			commonMessages($, 'error');

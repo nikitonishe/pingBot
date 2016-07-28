@@ -14,7 +14,7 @@ var favorites = function($){
 		}).catch(err => {
 			db.connection.close();
 			console.error(err);
-			return commonMessages.error($);
+			commonMessages.error($);
 		})
 }
 

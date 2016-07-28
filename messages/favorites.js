@@ -9,7 +9,7 @@ var empty = function($){
 	keyboard.getStartButtons($.chatId)
 		.then(keyboard => {
 			var options = {reply_markup: keyboard};
-			$.sendMessage(text, options);
+			return $.sendMessage(text, options);
 		})
 		.catch(err => {
 			commonMessages($, 'error');

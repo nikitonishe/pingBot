@@ -13,9 +13,11 @@
 
 	"askSite": "Напишите адрес сайта.",
 	"incorrectAddress": "Некорректный адрес. Попробуйте еще раз.",
+	"wait": "Пожалуйста, подождите.",
 	"siteAlreadyExist": "Сайт уже в избранном.",
 	"cancel": "Операция отменена.",
 	"firstTimeNewStatus": " Текущий статус: ",
+	"doesNotResponse": " не отвечает.",
 
 	"favoritesIsEmpty": "В избранном ничего нет.",
 
