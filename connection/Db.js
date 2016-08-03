@@ -66,6 +66,17 @@ var Db = function(){
 			.catch(err => this.errHandler(err))
 	}
 
+	this.checkSiteFav = (address, chatId)=>{
+		return this.getSite(address)
+			.then(site => {
+				if(site){
+					if(findValue(site.users,chatId) !== -1)	return true;
+				}
+				return false;
+			})
+			.catch(err => this.errHandler(err));
+	}
+
 	this.getSites = () => this.Site.find().exec().catch(err => this.errHandler(err));
 
 	this.getSite = (address) => this.Site.findOne({path: address}).exec().catch(err => this.errHandler(err));

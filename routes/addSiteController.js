@@ -24,10 +24,10 @@ var waitAddress = function wait($){
 				return Promise.reject();
 			}
 			db = new Db;
-			return db.getSite(address);	
+			return db.checkSiteFav(address, $.chatId);	
 		})
-		.then(site => {
-			if(site) {
+		.then(siteAlreadyExist => {
+			if(siteAlreadyExist) {
 				addSiteMessages.endOperation($, 'siteAlreadyExist');
 				return Promise.reject();
 			}
